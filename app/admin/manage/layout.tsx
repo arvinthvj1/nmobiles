@@ -1,14 +1,14 @@
-import { Navbar } from "@/components/navbar";
+import NavBar from "@/components/navbar";
 
 export default function ManageLayout({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	return (
-		<div>
-       <Navbar/>
-				{children}
+  return (
+    <div>
+      <NavBar />
+      <div className="px-6">{children}</div>
     </div>
-	);
+  );
 }
