@@ -1,3 +1,4 @@
+"use client"
 import CustomTable from "@/components/customTable";
 import { Button } from "@nextui-org/button";
 import React from "react";
@@ -14,7 +15,7 @@ import {
 } from "@nextui-org/react";
 import RoleCards from "./RoleCards";
 
-function AddForm() {
+function AddForm({triggerSubmit}) {
   return (
     <Card className="max-w-full">
       <CardHeader className="flex gap-3">
@@ -26,10 +27,11 @@ function AddForm() {
         key={"outside"}
         type="text"
         label="Name"
+        className="mb-5"
         labelPlacement={"outside"}
         placeholder="Enter your name"
        />
-       <RoleCards/>
+       <RoleCards triggerSubmit={triggerSubmit}/>
       </CardBody>
       <Divider />
     </Card>
@@ -37,6 +39,9 @@ function AddForm() {
 }
 
 export default function AddRole() {
+  const handleSubmit=(data:any)=>{
+    debugger
+  }
   return (
     <div>
       <div className="flex justify-between align-center mb-5">
@@ -45,7 +50,7 @@ export default function AddRole() {
           View All
         </Button>
       </div>
-      <AddForm />
+      <AddForm triggerSubmit={handleSubmit}/>
     </div>
   );
 }
