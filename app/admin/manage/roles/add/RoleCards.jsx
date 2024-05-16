@@ -11,10 +11,12 @@ import {
   Image,
   Switch,
   Button,
+  Input,
 } from "@nextui-org/react";
-
+import {fetchData} from "../../../../fe-handlers/requestHandlers.js"
 export default function RoleCards({ triggerSubmit }) {
   const [allData, setAllData] = useState([]);
+  const [roleName, setRoleName] = useState('');
   const [settingsGrouped, setSettingsGrouped] = useState({});
   const changeDataStructure = (data) => {
     const groupedByMainGroup = Object.groupBy(data, ({ main_group }) => {
@@ -46,15 +48,33 @@ export default function RoleCards({ triggerSubmit }) {
     });
     triggerState();
   };
+
+  const getAllPermissons =async()=>{
+    const data  = await fetchData("permissons", [
+      {
+        $match: {} // Match all documents
+      }
+    ]);
+    changeDataStructure(data);
+    setAllData(data);
+  }
   useEffect(() => {
-    if (rolePermission) {
-      console.log("dchange", changeDataStructure(rolePermission));
-      setAllData(rolePermission);
-    }
+    getAllPermissons();
   }, []);
 
   return (
     <div>
+      <Input
+        key={"outside"}
+        type="text"
+        label="Name"
+        onChange={(e)=>{
+          setRoleName(e.target.value)
+        }}
+        className="mb-5"
+        labelPlacement={"outside"}
+        placeholder="Enter role name"
+       />
       {Object.keys(settingsGrouped).map((eachGroup) => {
         return (
           <Card className="max-w-full mb-5">
@@ -110,7 +130,7 @@ export default function RoleCards({ triggerSubmit }) {
       })}
       <div>
         <Button onClick={()=>{
-          triggerSubmit(settingsGrouped)
+          triggerSubmit(settingsGrouped,roleName)
         }} color="primary">Submit</Button>
       </div>
     </div>

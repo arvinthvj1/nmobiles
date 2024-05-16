@@ -14,6 +14,7 @@ import {
   Input,
 } from "@nextui-org/react";
 import RoleCards from "./RoleCards";
+import { addData } from "@/app/fe-handlers/requestHandlers";
 
 function AddForm({triggerSubmit}) {
   return (
@@ -23,14 +24,7 @@ function AddForm({triggerSubmit}) {
       </CardHeader>
       <Divider />
       <CardBody>
-      <Input
-        key={"outside"}
-        type="text"
-        label="Name"
-        className="mb-5"
-        labelPlacement={"outside"}
-        placeholder="Enter your name"
-       />
+      
        <RoleCards triggerSubmit={triggerSubmit}/>
       </CardBody>
       <Divider />
@@ -39,8 +33,13 @@ function AddForm({triggerSubmit}) {
 }
 
 export default function AddRole() {
-  const handleSubmit=(data:any)=>{
+  const handleSubmit=(data:any,roleName:any)=>{
     debugger
+
+    addData("roles", {
+      role : roleName,
+      permsions : data
+  })
   }
   return (
     <div>
