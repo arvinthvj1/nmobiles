@@ -1,4 +1,4 @@
-
+// "use client"
 import axios from 'axios';
 const BASE_URL = window.location.origin ? window.location.origin+"/api/crud/allCrud" : "";
 console.log( "basepath" , BASE_URL)
