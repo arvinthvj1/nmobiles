@@ -10,6 +10,7 @@ import {
   SelectItem,
   Button,
   Input,
+  Spinner,
 } from "@nextui-org/react";
 import { addData, fetchData } from "@/app/fe-handlers/requestHandlers";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
@@ -62,7 +63,7 @@ export default function App() {
   const [metaKeywordsEdited, setMetaKeywordsEdited] = useState(false);
   const [parentCategoryData, setParentCategorydata] = useState<any>([]);
   const [toastMessage, setToastMessage] =  useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState("none");
 
   const getAllCategories = async () => {
     debugger
@@ -88,7 +89,7 @@ export default function App() {
       .replace(/-+/g, "-");
   };
 
-  const uploadFileToS3 = async (file:any, fieldName:any, setFieldValue:any) => {
+  const uploadFileToS3 = async (file:any) => {
     const formData = new FormData();
     formData.append("file", file);
   
@@ -103,22 +104,73 @@ export default function App() {
   
       if (response.ok) {
         const data = await response.json();
-        setFieldValue(fieldName, data.data.Key);
-        alert('File uploaded successfully');
+        return data.data.Key;
       } else {
         const error = await response.json();
-        alert('File upload failed');
         console.error(error);
+        alert('File upload failed');
+        return null;
       }
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Error uploading file');
+      return null;
     }
   };
   
-
+  const handleSubmit = async (values:any, { setSubmitting }:any) => {
+    console.log(values);
+    setIsSubmitting("flex");
+  
+    const { categoryName, parentCategory, bannerImage, thumbnailImage } = values;
+  
+    
+    const matchedCategoryFromExistingParent = data.find(
+      (e: any) => e.categoryName == categoryName && e.parentCategory == parentCategory
+    );
+    if (matchedCategoryFromExistingParent) {
+      setIsSubmitting("none");
+      setToastMessage(`The category ${categoryName} is already inside the chosen parent category ${parentCategory}`);
+    }else{
+      // Upload images if they exist
+    let bannerImageUrl = null;
+    let thumbnailImageUrl = null;
+      if (bannerImage) {
+        bannerImageUrl = await uploadFileToS3(bannerImage);
+      }
+    
+      if (thumbnailImage) {
+        thumbnailImageUrl = await uploadFileToS3(thumbnailImage);
+      }
+    
+      // Update values with image URLs
+      const updatedValues = {
+        ...values,
+        bannerImage: bannerImageUrl,
+        thumbnailImage: thumbnailImageUrl,
+      };
+    
+      
+    
+      await addData("categories", updatedValues);
+      setIsSubmitting("none");
+      setSubmitting(false);
+    }
+    
+  };
+  
   return (
     [<Toaster key={new Date().toString()} message = {toastMessage}/>,
+      <Spinner style={{
+        background: '#ffffff9e',
+        position: 'absolute',
+        zIndex: 111,
+        display : isSubmitting,
+        height: '100vh',
+        width: '100vw',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }} label="Submitting..." color="warning" ></Spinner>,
     <Formik
       initialValues={{
         categoryName: "",
@@ -133,18 +185,7 @@ export default function App() {
         thumbnailImage: null,
       }}
       validationSchema={validationSchema}
-      onSubmit={(values) => {
-        console.log(values);
-        const {categoryName, parentCategory} = values;
-        const matchedCategoryFromExistingParent = data.find((e:any)=> e.categoryName== categoryName && e.parentCategory == parentCategory);
-
-        if(matchedCategoryFromExistingParent){
-          setToastMessage(`The category ${categoryName} is already inside the chosen parent category ${parentCategory}`);
-        }else{
-          addData("categories", values);
-        }
-        
-      }}
+      onSubmit={handleSubmit}
     >
       {({ values, setFieldValue, handleChange }) => {
         useEffect(() => {
@@ -361,7 +402,7 @@ export default function App() {
                     className="w-full"
                     onChange={(event) => {
                       const file = event.currentTarget.files[0];
-                      uploadFileToS3(file, "bannerImage", setFieldValue);
+                      setFieldValue('bannerImage', file);
                     }}
                   />
                   <ErrorMessage
@@ -383,7 +424,7 @@ export default function App() {
                     className="w-full"
                     onChange={(event) => {
                       const file = event.currentTarget.files[0];
-                      uploadFileToS3(file, "thumbnailImage", setFieldValue);
+                      setFieldValue('thumbnailImage', file)
                     }}
                   />
                   <ErrorMessage

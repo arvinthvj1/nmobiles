@@ -4,18 +4,20 @@ import CustomTable from "@/components/customTable";
 import { fetchData } from "@/app/fe-handlers/requestHandlers";
 
 const getAllCategories = async () => {
-  debugger
   const data = await fetchData("categories", [
     {
-      $match: {},
-    },
-  ]);
+      $match: {
+        categoryName: { $exists: true }
+      }
+    }
+  ]
+  );
   return {
     columns: [
-      { name: "Category Name", uid: "categoryName" },
-      { name: "Slug", uid: "slug" },
-      { name: "STATUS", uid: "status" },
-      { name: "ACTIONS", uid: "actions" },
+      { name: "Category Name", uid: "categoryName", type: "text" },
+      { name: "THUMB IMAGE", uid: "bannerImage", type: "image" },
+      { name: "EDIT", uid: "edit", type: "button" },
+      { name: "ACTIONS", uid: "actions", type: "button" },
     ],
     data: data,
   };

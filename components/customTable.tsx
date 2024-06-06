@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import {
   Table,
@@ -7,76 +6,48 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  User,
-  Chip,
-  Tooltip,
+  Button,
 } from "@nextui-org/react";
 
-const statusColorMap = {
-  active: "success",
-  paused: "danger",
-  vacation: "warning",
-};
+const CustomTable = ({ columns, data }:any) => {
+  // Function to render cell content based on column definition
+  const renderCellContent = (item:any, column:any) => {
+    if (!item || !column) return null;
 
-const renderCell = (item, columnKey) => {
-  if (!item || !columnKey) return null;
+    const cellValue = item[column.uid];
 
-  const cellValue = item[columnKey];
+    switch (column.type) {
+      case "image":
+        return <img style={{ width: "16px" }} src={`${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${cellValue}`} alt="Thumbnail" />;
+      case "button":
+        return <Button color="primary" variant="ghost">{cellValue}</Button>;
+      default:
+        return cellValue;
+    }
+  };
 
-  switch (columnKey) {
-    case "categoryName":
-      return cellValue;
-    case "slug":
-      return cellValue;
-    case "status":
-      return (
-        <Chip className="capitalize" color={statusColorMap[item.status]} size="sm" variant="flat">
-          {cellValue}
-        </Chip>
-      );
-    case "actions":
-      return (
-        <div className="relative flex items-center gap-2">
-          <Tooltip content="Details">
-            <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-              {/* <EyeIcon /> */}
-            </span>
-          </Tooltip>
-          <Tooltip content="Edit">
-            <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-              {/* <EditIcon /> */}
-            </span>
-          </Tooltip>
-          <Tooltip color="danger" content="Delete">
-            <span className="text-lg text-danger cursor-pointer active:opacity-50">
-              {/* <DeleteIcon /> */}
-            </span>
-          </Tooltip>
-        </div>
-      );
-    default:
-      return cellValue;
-  }
-};
-
-export default function CustomTable({ columns, data }) {
-  debugger
   return (
     <Table aria-label="Example table with custom cells">
       <TableHeader columns={columns}>
-        {(column) => (
+        {(column :any) => (
           <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
             {column.name}
           </TableColumn>
         )}
       </TableHeader>
       <TableBody items={data}>
-        {(item) => (
+        {(item :any) => (
           <TableRow key={item.id || item._id}>
-            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+            {columns.map((column :any) => (
+              <TableCell key={column.uid}>
+                {renderCellContent(item, column)}
+              </TableCell>
+            ))}
           </TableRow>
         )}
       </TableBody>
     </Table>
   );
-}
+};
+
+export default CustomTable;
