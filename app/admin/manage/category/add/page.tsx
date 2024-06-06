@@ -15,30 +15,44 @@ import { addData, fetchData } from "@/app/fe-handlers/requestHandlers";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import TextEditor from "../../../../../components/TextEditor";
+import Toaster from "@/components/toaster";
 
 const field_type_data = [
   {
-    label: "sample field type",
-    value: "sample field type",
+    label: "Select",
+    value: "select",
+  },
+  {
+    label: "Multi-Select",
+    value: "multi-select",
   },
 ];
-
+const field_type_req = [
+  {
+    label: "Required",
+    value: "required",
+  },
+  {
+    label: "Not Required",
+    value: "not-required",
+  },
+];
 const validationSchema = Yup.object({
   categoryName: Yup.string().required("Category Name is required"),
   urlSlug: Yup.string().required("URL Slug is required"),
   priority: Yup.number().required("Priority is required").min(1),
-  parentCategory: Yup.string().required("Parent Category is required"),
+  parentCategory: Yup.string(),
   productFields: Yup.array().of(
     Yup.object().shape({
-      fieldLabel: Yup.string().required("Field Label is required"),
-      fieldType: Yup.string().required("Field Type is required"),
+      fieldLabel: Yup.string(),
+      fieldType: Yup.string(),
+      fieldRequired: Yup.string(),
+      fieldOptions: Yup.string(),
     })
   ),
   metaKeywords: Yup.string(),
   metaTitle: Yup.string().required("Meta Title is required"),
   metaDesc: Yup.string().required("Meta description is required"),
-  bannerImage: Yup.mixed().required("Banner Image is required"),
-  thumbnailImage: Yup.mixed().required("Thumbnail Image is required"),
 });
 
 export default function App() {
@@ -46,14 +60,19 @@ export default function App() {
   const [metaTitleEdited, setMetaTitleEdited] = useState(false);
   const [metaDescEdited, setMetaDescEdited] = useState(false);
   const [metaKeywordsEdited, setMetaKeywordsEdited] = useState(false);
+  const [parentCategoryData, setParentCategorydata] = useState<any>([]);
+  const [toastMessage, setToastMessage] =  useState("");
+
 
   const getAllCategories = async () => {
-    const data = await fetchData("categories", [
+    debugger
+    const dataGot = await fetchData("categories", [
       {
         $match: {},
       },
     ]);
-    setData(data.map(({ categoryName }: any) => ({ label: categoryName, value: categoryName })));
+    setData(dataGot);
+    setParentCategorydata(dataGot.map(({ categoryName , parentCategory}: any) => ({ label: parentCategory ? `${parentCategory} > ${categoryName}`: categoryName , value: categoryName })));
   };
 
   useEffect(() => {
@@ -69,7 +88,7 @@ export default function App() {
       .replace(/-+/g, "-");
   };
 
-  const uploadFileToS3 = async (file, fieldName, setFieldValue) => {
+  const uploadFileToS3 = async (file:any, fieldName:any, setFieldValue:any) => {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -96,13 +115,14 @@ export default function App() {
   };
 
   return (
+    [<Toaster key={new Date().toString()} message = {toastMessage}/>,
     <Formik
       initialValues={{
         categoryName: "",
         urlSlug: "",
         priority: "",
         parentCategory: "",
-        productFields: [{ fieldLabel: "", fieldType: "" }],
+        productFields: [{ fieldLabel: "", fieldType: "" ,fieldRequired : "", fieldOptions: ""}],
         metaKeywords: "",
         metaTitle: "",
         metaDesc: "",
@@ -112,11 +132,20 @@ export default function App() {
       validationSchema={validationSchema}
       onSubmit={(values) => {
         console.log(values);
-        addData("categories", values);
+        const {categoryName, parentCategory} = values;
+        const matchedCategoryFromExistingParent = data.find((e:any)=> e.categoryName== categoryName && e.parentCategory == parentCategory);
+
+        if(matchedCategoryFromExistingParent){
+          setToastMessage(`The category ${categoryName} is already inside the chosen parent category ${parentCategory}`);
+        }else{
+          addData("categories", values);
+        }
+        
       }}
     >
       {({ values, setFieldValue, handleChange }) => {
         useEffect(() => {
+          debugger
           const titleToSlug = convertToSlug(values.categoryName);
           setFieldValue("urlSlug", titleToSlug);
           if (!metaTitleEdited) {
@@ -128,6 +157,7 @@ export default function App() {
           if (!metaKeywordsEdited) {
             setFieldValue("metaKeywords", values.categoryName);
           }
+         
         }, [
           values.categoryName,
           setFieldValue,
@@ -199,7 +229,7 @@ export default function App() {
                   placeholder="select a parent category"
                   className="max-w-full mb-4"
                 >
-                  {data.map((category) => (
+                  {parentCategoryData.map((category:any) => (
                     <SelectItem key={category?.value} value={category?.value}>
                       {category?.label}
                     </SelectItem>
@@ -214,6 +244,7 @@ export default function App() {
                 <FieldArray name="productFields">
                   {({ remove, push }) => (
                     <>
+                    {/* <img src="wefw" style={{height : "30px", width : "40px"}}></img> */}
                       {values.productFields.map((field, index) => (
                         <Card key={index} className="max-w-full mb-4">
                           <CardBody>
@@ -239,7 +270,7 @@ export default function App() {
                                 as={Select}
                                 labelPlacement={"outside"}
                                 label="Field Type"
-                                placeholder="select a field type"
+                                placeholder="Select a field type"
                                 className="w-48"
                               >
                                 {field_type_data.map((type) => (
@@ -256,7 +287,43 @@ export default function App() {
                                 component="div"
                                 className="text-red-500"
                               />
-
+                              <Field
+                                name={`productFields.${index}.fieldRequired`}
+                                as={Select}
+                                labelPlacement={"outside"}
+                                label="Field Required"
+                                placeholder="Select a field type"
+                                className="w-48"
+                              >
+                                {field_type_req.map((type) => (
+                                  <SelectItem
+                                    key={type?.label}
+                                    value={type?.value}
+                                  >
+                                    {type?.label}
+                                  </SelectItem>
+                                ))}
+                              </Field>
+                              <ErrorMessage
+                                name={`productFields.${index}.fieldRequired`}
+                                component="div"
+                                className="text-red-500"
+                              />
+                              <Field
+                                name={`productFields.${index}.fieldOptions`}
+                                as={Input}
+                                type="text"
+                                labelPlacement="outside"
+                                label="Field Options"
+                                variant="bordered"
+                                placeholder="option 1, option 2..."
+                                className="w-48"
+                              />
+                              <ErrorMessage
+                                name={`productFields.${index}.fieldOptions`}
+                                component="div"
+                                className="text-red-500"
+                              />
                               <Button
                                 color="danger"
                                 className="absolute right-0 top-0"
@@ -271,7 +338,7 @@ export default function App() {
                       <Button
                         color="primary"
                         className="w-40"
-                        onClick={() => push({ fieldLabel: "", fieldType: "" })}
+                        onClick={() => push({ fieldLabel: "", fieldType: "" ,fieldRequired : "", fieldOptions: ""})}
                       >
                         Add more
                       </Button>
@@ -282,13 +349,12 @@ export default function App() {
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2" htmlFor="bannerImage">
                     Banner Image
-                    <span className="text-gray-500 ml-2">(1272px x 300px, Resolution 72px, Only .jpg, Max 2MB)</span>
+                    <span className="text-gray-500 ml-2">(1272px x 300px, Resolution 72px, Max 2MB)</span>
                   </label>
                   <input
                     id="bannerImage"
                     name="bannerImage"
                     type="file"
-                    accept=".jpg"
                     className="w-full"
                     onChange={(event) => {
                       const file = event.currentTarget.files[0];
@@ -305,13 +371,12 @@ export default function App() {
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2" htmlFor="thumbnailImage">
                     Thumbnail Image
-                    <span className="text-gray-500 ml-2">(250px x 100px, Resolution 72px, Only .jpg, Max 2MB)</span>
+                    <span className="text-gray-500 ml-2">(250px x 100px, Resolution 72px, Max 2MB)</span>
                   </label>
                   <input
                     id="thumbnailImage"
                     name="thumbnailImage"
                     type="file"
-                    accept=".jpg"
                     className="w-full"
                     onChange={(event) => {
                       const file = event.currentTarget.files[0];
@@ -394,6 +459,6 @@ export default function App() {
           </Form>
         );
       }}
-    </Formik>
+    </Formik>]
   );
 }

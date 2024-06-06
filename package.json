@@ -50,6 +50,7 @@
 		"react-dom": "18.2.0",
 		"react-quill": "^2.0.0",
 		"react-rich-text-editor": "^2.1.2",
+		"react-toastify": "^10.0.5",
 		"tailwind-variants": "^0.1.20",
 		"tailwindcss": "3.4.3",
 		"typescript": "5.0.4",
