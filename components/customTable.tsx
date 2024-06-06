@@ -19,13 +19,13 @@ const CustomTable = ({ columns, data }: any) => {
     switch (column.type) {
       case "image":
         // Use template from column definition if provided, otherwise default
-        const imgSrc = column.template ? column.template(item) : `${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${cellValue}`;
-        return <img style={{ width: "16px" }} src={imgSrc} alt="Thumbnail" />;
+        const imgSrc = column.template ? column.template(item) : null;
+        return imgSrc ? <img style={{ width: "16px" }} src={imgSrc} alt="Thumbnail" /> : <></>;
       case "button":
         // Use template from column definition if provided, otherwise default
         const buttonText = column.template ? column.template(item) : cellValue;
         return (
-          <Button color="primary" variant="ghost" onClick={() => column.clickHandler && column.clickHandler(item)}>
+          <Button color={column.color} variant={column.variant} onClick={() => column.clickHandler && column.clickHandler(item)}>
             {buttonText}
           </Button>
         );
@@ -35,7 +35,7 @@ const CustomTable = ({ columns, data }: any) => {
   };
 
   return (
-    <Table aria-label="Example table with custom cells">
+    <Table  aria-label="">
       <TableHeader columns={columns}>
         {(column: any) => (
           <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
@@ -45,7 +45,7 @@ const CustomTable = ({ columns, data }: any) => {
       </TableHeader>
       <TableBody items={data}>
         {(item: any) => (
-          <TableRow key={item.id || item._id}>
+          <TableRow className="border" key={item.id || item._id}>
             {columns.map((column: any) => (
               <TableCell key={column.uid}>
                 {renderCellContent(item, column)}

@@ -19,19 +19,25 @@ export default function Category() {
     );
     return {
       columns: [
-        { name: "Category Name", uid: "categoryName", type: "text" },
+        { 
+          name: "Category Name",
+          uid: "categoryName", 
+          type: "text" , 
+        },
         { 
           name: "THUMB IMAGE", 
           uid: "bannerImage", 
           type: "image", 
           template: (item:any) => {
-            return `${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${item.bannerImage}`;
+            return item.bannerImage ? `${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${item.bannerImage}` : null;
           }
         },
         { 
           name: "EDIT", 
           uid: "edit", 
-          type: "button", 
+          type: "button",
+          color:"primary",
+          variant:"ghost",
           template: (item:any) => {
             return `Edit`;
           },
@@ -43,6 +49,8 @@ export default function Category() {
           name: "ACTIONS", 
           uid: "actions", 
           type: "button",
+          color:"danger" ,
+          variant:"ghost",
           template: (item:any) => {
             return `Delete`;
           },
