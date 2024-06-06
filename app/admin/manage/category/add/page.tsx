@@ -91,17 +91,19 @@ export default function App() {
   const uploadFileToS3 = async (file:any, fieldName:any, setFieldValue:any) => {
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       const response = await fetch("/api/aws/createS3", {
         method: "POST",
-        body: formData,
+        body: file,
+        headers: {
+          'Content-Disposition': `attachment; filename="${file.name}"`
+        },
       });
-
+  
       if (response.ok) {
         const data = await response.json();
-        debugger
-        setFieldValue(fieldName, `${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${data.data.Key}`);
+        setFieldValue(fieldName, data.data.Key);
         alert('File uploaded successfully');
       } else {
         const error = await response.json();
@@ -113,6 +115,7 @@ export default function App() {
       alert('Error uploading file');
     }
   };
+  
 
   return (
     [<Toaster key={new Date().toString()} message = {toastMessage}/>,
