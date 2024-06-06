@@ -24,7 +24,7 @@ const getAllCategories = async () => {
 };
 
 export default function Category() {
-  const [tableData, setTableData] = useState({ columns: [], data: [] });
+  const [tableData, setTableData] = useState<any>({ columns: [], data: [] });
 
   useEffect(() => {
     debugger
