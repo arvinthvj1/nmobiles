@@ -13,7 +13,14 @@ export default async function handler(req, res) {
       try {
         const client = await connectToDatabase();
         const collection = client.db().collection(collectionName);
-
+        
+        // Check if a document with the same values already exists
+        const existingDocument = await collection.findOne(document);
+        if (existingDocument) {
+          // Handle the case where a matching document is found
+          return res.status(409).json({ message: 'Document with the same values already exists' });
+        }
+        
         // Fetch the counter for the current collection
         const countersCollection = client.db().collection("counters");
         const counterDoc = await countersCollection.findOneAndUpdate(
@@ -21,12 +28,20 @@ export default async function handler(req, res) {
           { $inc: { value: 1 } }, // Increment the counter value
           { upsert: true, returnOriginal: false }
         );
+        
         // Use the counter value as the ID for the new document
-        document.id = counterDoc ? counterDoc.value : 1;
-
+        if (counterDoc?.value) {
+          console.error("counterDoc.value", counterDoc);
+          document.id = (counterDoc.value) + 1; // Directly access the incremented value
+        } else {
+          console.error("counterDoc.value is null:", counterDoc);
+          document.id = 1; // Fallback to 1 if something goes wrong
+        }
+        
         // Insert the document into the collection
         const result = await collection.insertOne(document);
         return res.status(201).json(result);
+        
       } catch (error) {
         console.error("Error processing request:", error);
         return res.status(500).json({ error: "Internal Server Error" });
