@@ -56,7 +56,8 @@ const validationSchema = Yup.object({
   metaDesc: Yup.string().required("Meta description is required"),
 });
 
-export default function App() {
+export default function AddOrEdit({editData}:any) {
+  debugger
   const [data, setData] = useState<any>([]);
   const [metaTitleEdited, setMetaTitleEdited] = useState(false);
   const [metaDescEdited, setMetaDescEdited] = useState(false);

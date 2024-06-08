@@ -13,7 +13,18 @@ export default async function handler(req, res) {
       try {
         const client = await connectToDatabase();
         const collection = client.db().collection(collectionName);
-        console.log("to insert", document);
+
+        // Fetch the counter for the current collection
+        const countersCollection = client.db().collection("counters");
+        const counterDoc = await countersCollection.findOneAndUpdate(
+          { _id: collectionName },
+          { $inc: { value: 1 } }, // Increment the counter value
+          { upsert: true, returnOriginal: false }
+        );
+        // Use the counter value as the ID for the new document
+        document.id = counterDoc ? counterDoc.value : 1;
+
+        // Insert the document into the collection
         const result = await collection.insertOne(document);
         return res.status(201).json(result);
       } catch (error) {

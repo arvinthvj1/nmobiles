@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from "react";
 import CustomTable from "@/components/customTable";
 import { fetchData } from "@/app/fe-handlers/requestHandlers";
-
+import { useRouter } from 'next/navigation';
 
 
 export default function Category() {
+  const router = useRouter();
   const [tableData, setTableData] = useState<any>({ columns: [], data: [] });
 
   const getAllCategories = async () => {
@@ -42,7 +43,8 @@ export default function Category() {
             return `Edit`;
           },
           clickHandler: (item:any) => {
-            console.log(`Edit button clicked for item with id ${item.id}`);
+            debugger
+            router.push('/admin/manage/category/edit', { state: { data: item } });
           }
         },
         { 

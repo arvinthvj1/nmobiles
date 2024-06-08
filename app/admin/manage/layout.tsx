@@ -1,3 +1,4 @@
+"use client"
 import NavBar from "@/components/navbar";
 
 export default function ManageLayout({
@@ -5,6 +6,7 @@ export default function ManageLayout({
 }: {
   children: React.ReactNode;
 }) {
+  debugger
   return (
     <div>
       <NavBar />
