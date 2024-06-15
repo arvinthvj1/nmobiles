@@ -21,10 +21,9 @@ const  modules = {
     ]
   };
 
-const TextEditor =()=>{
-     const [value, setValue] = useState('');
+const TextEditor =({setTextAreaValue, value})=>{
 
-    return <ReactQuill theme="snow" value={value} onChange={setValue} modules={modules}/>;
+    return <ReactQuill theme="snow" value={value} onChange={setTextAreaValue} modules={modules}/>;
 }
 
 

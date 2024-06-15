@@ -9,7 +9,7 @@ async function connectToDatabase() {
   }
   // mongodb+srv://cilbertleon:v7n3zuLlytVRJ3pZ@black.wohx6ci.mongodb.net/black?retryWrites=true&w=majority&appName=black
   // mongodb+srv://arvinthvj:YinGWxdoNtyVva3a@cluster0.s4nxp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-  const client = new MongoClient("mongodb+srv://arvinthvj:YinGWxdoNtyVva3a@cluster0.s4nxp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+  const client = new MongoClient("mongodb+srv://cilbertleon:v7n3zuLlytVRJ3pZ@black.wohx6ci.mongodb.net/black?retryWrites=true&w=majority&appName=black", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });

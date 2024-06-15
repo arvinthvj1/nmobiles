@@ -16,7 +16,8 @@ import { addData, fetchData } from "@/app/fe-handlers/requestHandlers";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import TextEditor from "../../../../../components/TextEditor";
-import Toaster from "@/components/toaster";
+import Toast from "@/components/toaster";
+import { useRouter } from 'next/navigation'
 
 const field_type_data = [
   {
@@ -58,12 +59,13 @@ const validationSchema = Yup.object({
 
 export default function AddOrEdit({editData}:any) {
   debugger
+  const router = useRouter();
   const [data, setData] = useState<any>([]);
   const [metaTitleEdited, setMetaTitleEdited] = useState(false);
   const [metaDescEdited, setMetaDescEdited] = useState(false);
   const [metaKeywordsEdited, setMetaKeywordsEdited] = useState(false);
   const [parentCategoryData, setParentCategorydata] = useState<any>([]);
-  const [toastMessage, setToastMessage] =  useState("");
+  const [toastMessage, setToastMessage] =  useState({type : "", message: ""});
   const [isSubmitting, setIsSubmitting] = useState("none");
 
   const getAllCategories = async () => {
@@ -131,37 +133,43 @@ export default function AddOrEdit({editData}:any) {
     );
     if (matchedCategoryFromExistingParent) {
       setIsSubmitting("none");
-      setToastMessage(`The category ${categoryName} is already inside the chosen parent category ${parentCategory}`);
+      setToastMessage({message : `The category ${categoryName} is already inside the chosen parent category ${parentCategory}`, type:"error"});
     }else{
-      // Upload images if they exist
-    let bannerImageUrl = null;
-    let thumbnailImageUrl = null;
-      if (bannerImage) {
-        bannerImageUrl = await uploadFileToS3(bannerImage);
-      }
     
-      if (thumbnailImage) {
-        thumbnailImageUrl = await uploadFileToS3(thumbnailImage);
-      }
-    
-      // Update values with image URLs
-      const updatedValues = {
-        ...values,
-        bannerImage: bannerImageUrl,
-        thumbnailImage: thumbnailImageUrl,
-      };
-    
+    try{
+      let bannerImageUrl = null;
+      let thumbnailImageUrl = null;
+        if (bannerImage) {
+          bannerImageUrl = await uploadFileToS3(bannerImage);
+        }
       
-    
-      await addData("categories", updatedValues);
+        if (thumbnailImage) {
+          thumbnailImageUrl = await uploadFileToS3(thumbnailImage);
+        }
+      
+        // Update values with image URLs
+        const updatedValues = {
+          ...values,
+          bannerImage: bannerImageUrl,
+          thumbnailImage: thumbnailImageUrl,
+        };
+      
+        await addData("categories", updatedValues);
+        setToastMessage({message : `Submitted Successfully !`, type : "success"});
+        setTimeout(() => {
+          debugger
+          router.push(window.location.href.replace("add", ""))
+        }, 3000);
+    }catch(err){
       setIsSubmitting("none");
-      setSubmitting(false);
+      setToastMessage({message : JSON.stringify(err), type : "error"});
+    }
     }
     
   };
   
   return (
-    [<Toaster key={new Date().toString()} message = {toastMessage}/>,
+    [<Toast  toastObj={toastMessage}/>,
       <Spinner style={{
         background: '#ffffff9e',
         position: 'absolute',
@@ -184,6 +192,7 @@ export default function AddOrEdit({editData}:any) {
         metaDesc: "",
         bannerImage: null,
         thumbnailImage: null,
+        content : ""
       }}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
@@ -492,7 +501,10 @@ export default function AddOrEdit({editData}:any) {
                   component="div"
                   className="text-red-500"
                 />
-                <TextEditor />
+                <TextEditor setTextAreaValue={((e :any)=>  {
+                  debugger
+                  setFieldValue('content', e)
+                })} value={values.content}/>
               </CardBody>
               <Divider />
               <CardFooter>
