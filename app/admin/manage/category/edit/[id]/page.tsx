@@ -1,14 +1,29 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import AddOrEdit from "../../add/page";
+import { fetchData } from "@/app/fe-handlers/requestHandlers";
 
-"use client"
-import React from 'react'
-import AddOrEdit from '../../add/page'
+const Edit = ({ params }: any) => {
+  const [editData, setEditData] = useState([]);
 
-const Edit = ({ params }:any) => {
-    // debugger
-  // debugger
-  return (
-    <AddOrEdit editId={params.id}/>
-  )
-}
+  const getEditData = async (editId: any) => {
+    const data = await fetchData("categories", [
+      {
+        $match: {
+          id: Number(editId),
+        },
+      },
+    ]);
+    setEditData(data[0]);
+  };
 
-export default Edit
+  useEffect(() => {
+    return () => {
+      getEditData(params.id);
+    };
+  }, [params]);
+
+  return Object.keys(editData).length ? <AddOrEdit editData={editData} /> : "Loading ...";
+};
+
+export default Edit;

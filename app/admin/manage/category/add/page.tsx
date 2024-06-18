@@ -57,8 +57,8 @@ const validationSchema = Yup.object({
   metaDesc: Yup.string().required("Meta description is required"),
 });
 
-export default function AddOrEdit({editId}:any) {
-  // debugger
+export default function AddOrEdit({editData = {}}:any) {
+  debugger
   const router = useRouter();
   const [data, setData] = useState<any>([]);
   const [metaTitleEdited, setMetaTitleEdited] = useState(false);
@@ -67,22 +67,8 @@ export default function AddOrEdit({editId}:any) {
   const [parentCategoryData, setParentCategorydata] = useState<any>([]);
   const [toastMessage, setToastMessage] =  useState({type : "", message: ""});
   const [isSubmitting, setIsSubmitting] = useState("none");
-  const [editData ,setEditData] = useState({});
 
 
-  const getEditData =async (editId:any)=>{
-    // debugger
-    const data = await fetchData("categories", [
-      {
-        $match: {
-          id: Number(editId)
-        }
-      }
-    ]);
-    // debugger
-    setEditData(data);
-
-  }
 
 
   const getAllCategories = async () => {
@@ -103,14 +89,7 @@ export default function AddOrEdit({editId}:any) {
    }
   }, []);
 
-  useEffect(()=>{
-    return ()=>{
-      // debugger
-      if(editId){
-        getEditData(editId);
-      }
-    }
-  },[editId]);
+  
 
   const convertToSlug = (title: any) => {
     return title
@@ -209,7 +188,19 @@ export default function AddOrEdit({editId}:any) {
         alignItems: 'center',
       }} label="Submitting..." color="warning" ></Spinner>,
     <Formik
-      initialValues={{
+      initialValues={Object.keys(editData).length ? {
+        categoryName: editData.categoryName || "",
+        urlSlug: editData.urlSlug || "",
+        priority: editData.priority || "",
+        parentCategory: editData.parentCategory || "",
+        productFields: editData.productFields || [{ fieldLabel: "", fieldType: "" ,fieldRequired : "", fieldOptions: ""}] ,
+        metaKeywords: editData.metaKeywords || "",
+        metaTitle:  editData.metaTitle || "",
+        metaDesc: editData.metaDesc || "",
+        bannerImage: editData.bannerImage || "",
+        thumbnailImage: editData.thumbnailImage || "",
+        content : editData.content || "" 
+      } : {
         categoryName: "",
         urlSlug: "",
         priority: "",
@@ -249,14 +240,7 @@ export default function AddOrEdit({editId}:any) {
         ]);
 
 
-        useEffect(()=>{
-          if(editData && Object.keys(editData).length){
-            debugger
-           Object.keys(editData[0]).map(e=>{
-              setFieldValue(e, editData[0][e]);
-           })
-          }
-        }, [editData])
+       
         return (
           <Form>
             <Card className="max-w-full mb-4">
@@ -319,6 +303,7 @@ export default function AddOrEdit({editId}:any) {
                   label="Parent Category"
                   placeholder="select a parent category"
                   className="max-w-full mb-4"
+                  defaultSelectedKeys={[values.parentCategory]}
                 >
                   {parentCategoryData.map((category:any) => (
                     <SelectItem key={category?.value} value={category?.value}>
