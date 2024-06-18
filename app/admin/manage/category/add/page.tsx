@@ -18,7 +18,7 @@ import * as Yup from "yup";
 import TextEditor from "../../../../../components/TextEditor";
 import Toast from "@/components/toaster";
 import { useRouter } from 'next/navigation'
-
+import CloseIcon from '@mui/icons-material/Close';
 const field_type_data = [
   {
     label: "Select",
@@ -217,6 +217,9 @@ export default function AddOrEdit({editData = {}}:any) {
       onSubmit={handleSubmit}
     >
       {({ values, setFieldValue, handleChange }) => {
+        const [bannerPreview, setBannerPreview] = useState(null);
+        const [ thumbNailImagePreview, setThumbNailImagePreview] = useState(null);
+
         useEffect(() => {
           // debugger
           const titleToSlug = convertToSlug(values.categoryName);
@@ -239,8 +242,28 @@ export default function AddOrEdit({editData = {}}:any) {
           metaKeywordsEdited,
         ]);
 
+        useEffect(()=>{
+          if(Object.keys(editData).length){
+            setBannerPreview(`${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${editData.bannerImage}`)
+            setThumbNailImagePreview(`${window.location.origin}/api/aws/readS3?bucketName=nmobiles&key=${editData.thumbnailImage}`)
+          }
+        },[editData]);
 
-       
+        const handleFileChange = (event :any, fieldValue :any) => {
+          const file = event.currentTarget.files[0];
+          setFieldValue(fieldValue, file);
+      
+          // Create a preview of the selected file
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            // setBannerPreview(reader.result);
+          };
+          if (file) {
+            reader.readAsDataURL(file);
+          }
+        };
+
+        
         return (
           <Form>
             <Card className="max-w-full mb-4">
@@ -432,9 +455,8 @@ export default function AddOrEdit({editData = {}}:any) {
                     name="bannerImage"
                     type="file"
                     className="w-full"
-                    onChange={(event) => {
-                      const file = event.currentTarget.files[0];
-                      setFieldValue('bannerImage', file);
+                    onChange={(e)=>{
+                      handleFileChange(e,"bannerImage")
                     }}
                   />
                   <ErrorMessage
@@ -442,6 +464,17 @@ export default function AddOrEdit({editData = {}}:any) {
                     component="div"
                     className="text-red-500"
                   />
+                  {bannerPreview && (
+                    <div className="mt-4 flex items-end gap-3 ">
+                    
+                    <img src={bannerPreview} alt="Banner Preview" className="w-8" />
+                    <Button onClick={()=>{
+                      setBannerPreview(null)
+                    }} size="sm" color="danger" variant="bordered" startContent={<CloseIcon/>}>
+                    Remove
+                  </Button>
+                  </div>
+                  )}
                 </div>
 
                 <div className="mb-4">
@@ -454,9 +487,8 @@ export default function AddOrEdit({editData = {}}:any) {
                     name="thumbnailImage"
                     type="file"
                     className="w-full"
-                    onChange={(event) => {
-                      const file = event.currentTarget.files[0];
-                      setFieldValue('thumbnailImage', file)
+                    onChange={(e)=>{
+                      handleFileChange(e,"thumbnailImage")
                     }}
                   />
                   <ErrorMessage
@@ -464,6 +496,17 @@ export default function AddOrEdit({editData = {}}:any) {
                     component="div"
                     className="text-red-500"
                   />
+                     {thumbNailImagePreview && (
+                    <div className="mt-4 flex items-end gap-3 ">
+                    
+                      <img src={thumbNailImagePreview} alt="Thumbnail Preview" className="w-8" />
+                      <Button onClick={()=>{
+                      setThumbNailImagePreview(null)
+                    }} size="sm" color="danger" variant="bordered" startContent={<CloseIcon/>}>
+                      Remove
+                    </Button>
+                    </div>
+                  )}
                 </div>
 
                 <Field
