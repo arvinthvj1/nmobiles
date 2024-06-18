@@ -43,8 +43,9 @@ export default function Category() {
             return `Edit`;
           },
           clickHandler: (item:any) => {
-            debugger
-            router.push('/admin/manage/category/edit', { state: { data: item } });
+            let catId = item.id
+            router.push('/admin/manage/category/edit/'+catId);
+
           }
         },
         { 

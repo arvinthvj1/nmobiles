@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 function Toast({toastObj}) {
-  debugger;
+  // debugger;
   useEffect(() => {
     let {message, type} = toastObj;
     if (message?.length && type.length) {

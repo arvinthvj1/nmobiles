@@ -57,8 +57,8 @@ const validationSchema = Yup.object({
   metaDesc: Yup.string().required("Meta description is required"),
 });
 
-export default function AddOrEdit({editData}:any) {
-  debugger
+export default function AddOrEdit({editId}:any) {
+  // debugger
   const router = useRouter();
   const [data, setData] = useState<any>([]);
   const [metaTitleEdited, setMetaTitleEdited] = useState(false);
@@ -67,9 +67,26 @@ export default function AddOrEdit({editData}:any) {
   const [parentCategoryData, setParentCategorydata] = useState<any>([]);
   const [toastMessage, setToastMessage] =  useState({type : "", message: ""});
   const [isSubmitting, setIsSubmitting] = useState("none");
+  const [editData ,setEditData] = useState({});
+
+
+  const getEditData =async (editId:any)=>{
+    // debugger
+    const data = await fetchData("categories", [
+      {
+        $match: {
+          id: Number(editId)
+        }
+      }
+    ]);
+    // debugger
+    setEditData(data);
+
+  }
+
 
   const getAllCategories = async () => {
-    debugger
+    // debugger
     const dataGot = await fetchData("categories", [
       {
         $match: {},
@@ -80,8 +97,20 @@ export default function AddOrEdit({editData}:any) {
   };
 
   useEffect(() => {
+   return()=>{
+    // debugger
     getAllCategories();
+   }
   }, []);
+
+  useEffect(()=>{
+    return ()=>{
+      // debugger
+      if(editId){
+        getEditData(editId);
+      }
+    }
+  },[editId]);
 
   const convertToSlug = (title: any) => {
     return title
@@ -157,7 +186,6 @@ export default function AddOrEdit({editData}:any) {
         await addData("categories", updatedValues);
         setToastMessage({message : `Submitted Successfully !`, type : "success"});
         setTimeout(() => {
-          debugger
           router.push(window.location.href.replace("add", ""))
         }, 3000);
     }catch(err){
@@ -199,7 +227,7 @@ export default function AddOrEdit({editData}:any) {
     >
       {({ values, setFieldValue, handleChange }) => {
         useEffect(() => {
-          debugger
+          // debugger
           const titleToSlug = convertToSlug(values.categoryName);
           setFieldValue("urlSlug", titleToSlug);
           if (!metaTitleEdited) {
@@ -220,6 +248,15 @@ export default function AddOrEdit({editData}:any) {
           metaKeywordsEdited,
         ]);
 
+
+        useEffect(()=>{
+          if(editData && Object.keys(editData).length){
+            debugger
+           Object.keys(editData[0]).map(e=>{
+              setFieldValue(e, editData[0][e]);
+           })
+          }
+        }, [editData])
         return (
           <Form>
             <Card className="max-w-full mb-4">
@@ -502,7 +539,7 @@ export default function AddOrEdit({editData}:any) {
                   className="text-red-500"
                 />
                 <TextEditor setTextAreaValue={((e :any)=>  {
-                  debugger
+                  // debugger
                   setFieldValue('content', e)
                 })} value={values.content}/>
               </CardBody>
