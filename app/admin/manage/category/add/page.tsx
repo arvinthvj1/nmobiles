@@ -103,13 +103,20 @@ export default function AddOrEdit({editData = {}}:any) {
   const uploadFileToS3 = async (file:any) => {
     const formData = new FormData();
     formData.append("file", file);
-  
+    const filename = file.name;
+    const parts = filename.split(".");
+    const extension = parts.pop(); // Remove the last element (which is the extension)
+    
+    const timestamp = new Date().getTime();
+    const newFilename = `${parts.join(".")}_${timestamp}.${extension}`;
+    
     try {
       const response = await fetch("/api/aws/createS3", {
         method: "POST",
         body: file,
         headers: {
-          'Content-Disposition': `attachment; filename="${file.name}"`
+          'Content-Disposition': `attachment; filename="${newFilename}"`,
+          'folderName': 'categories' 
         },
       });
   
@@ -119,12 +126,10 @@ export default function AddOrEdit({editData = {}}:any) {
       } else {
         const error = await response.json();
         console.error(error);
-        alert('File upload failed');
         return null;
       }
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file');
       return null;
     }
   };
@@ -174,6 +179,24 @@ export default function AddOrEdit({editData = {}}:any) {
     }
     
   };
+  async function deleteFile(filename: string) {
+    try {
+      const response = await fetch(`/api/aws/createS3?filename=${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete file');
+      }
+  
+      const data = await response.json();
+      console.log('File deleted successfully:', data);
+    } catch (error :any) {
+      console.error('Error deleting file:', error.message);
+    }
+  }
+  
   
   return (
     [<Toast  toastObj={toastMessage}/>,
@@ -469,7 +492,9 @@ export default function AddOrEdit({editData = {}}:any) {
                     
                     <img src={bannerPreview} alt="Banner Preview" className="w-8" />
                     <Button onClick={()=>{
+                      debugger
                       setBannerPreview(null)
+                      deleteFile(editData?.bannerImage)
                     }} size="sm" color="danger" variant="bordered" startContent={<CloseIcon/>}>
                     Remove
                   </Button>
@@ -501,7 +526,9 @@ export default function AddOrEdit({editData = {}}:any) {
                     
                       <img src={thumbNailImagePreview} alt="Thumbnail Preview" className="w-8" />
                       <Button onClick={()=>{
-                      setThumbNailImagePreview(null)
+
+                      setThumbNailImagePreview(null);
+                      deleteFile(editData?.bannerImage)
                     }} size="sm" color="danger" variant="bordered" startContent={<CloseIcon/>}>
                       Remove
                     </Button>
