@@ -7,7 +7,7 @@ const Edit = ({ params }: any) => {
   const [editData, setEditData] = useState([]);
 
   const getEditData = async (editId: any) => {
-    const data = await fetchData("categories", [
+    const data = await fetchData("brand", [
       {
         $match: {
           id: Number(editId),
