@@ -210,6 +210,11 @@ export default function AddOrEdit({editData = {}}:any) {
         justifyContent: 'center',
         alignItems: 'center',
       }} label="Submitting..." color="warning" ></Spinner>,
+      <Button color="primary" onClick={()=>{
+        router.push('/admin/manage/category/');
+      }}>
+      View All
+    </Button>,
     <Formik
       initialValues={Object.keys(editData).length ? {
         categoryName: editData.categoryName || "",

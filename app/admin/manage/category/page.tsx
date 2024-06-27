@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import CustomTable from "@/components/customTable";
 import { fetchData } from "@/app/fe-handlers/requestHandlers";
 import { useRouter } from 'next/navigation';
+import { Button } from "@nextui-org/button";
 
 
 export default function Category() {
@@ -76,5 +77,9 @@ export default function Category() {
     fetchCategories();
   }, []);
 
-  return tableData.columns.length ? <CustomTable columns={tableData.columns} data={tableData.data} />: <></>;
+  return tableData.columns.length ? [<Button color="primary" onClick={()=>{
+    router.push('/admin/manage/category/add');
+  }}>
+ Add new
+</Button>,<CustomTable columns={tableData.columns} data={tableData.data} />]: <></>;
 }
