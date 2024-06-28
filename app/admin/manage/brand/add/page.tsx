@@ -106,7 +106,6 @@ export default function AddOrEdit({editData = {}}:any) {
   const handleSubmit = async (values:any, { setSubmitting }:any) => {
     console.log(values);
     setIsSubmitting("flex");
-  
     const { bannerImage, thumbnailImage } = values;
   
     

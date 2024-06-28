@@ -12,7 +12,7 @@ import {
   Input,
   Spinner,
 } from "@nextui-org/react";
-import { addData, fetchData } from "@/app/fe-handlers/requestHandlers";
+import { addData, fetchData, update } from "@/app/fe-handlers/requestHandlers";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import TextEditor from "../../../../../components/TextEditor";
@@ -58,8 +58,8 @@ const validationSchema = Yup.object({
 });
 
 export default function AddOrEdit({editData = {}}:any) {
-  debugger
   const router = useRouter();
+  const isEdit = Object.keys(editData).length;
   const [data, setData] = useState<any>([]);
   const [metaTitleEdited, setMetaTitleEdited] = useState(false);
   const [metaDescEdited, setMetaDescEdited] = useState(false);
@@ -144,7 +144,7 @@ export default function AddOrEdit({editData = {}}:any) {
     const matchedCategoryFromExistingParent = data.find(
       (e: any) => e.categoryName == categoryName && e.parentCategory == parentCategory
     );
-    if (matchedCategoryFromExistingParent) {
+    if (matchedCategoryFromExistingParent && !isEdit) {
       setIsSubmitting("none");
       setToastMessage({message : `The category ${categoryName} is already inside the chosen parent category ${parentCategory}`, type:"error"});
     }else{
@@ -152,12 +152,16 @@ export default function AddOrEdit({editData = {}}:any) {
     try{
       let bannerImageUrl = null;
       let thumbnailImageUrl = null;
-        if (bannerImage) {
+        if (bannerImage && typeof bannerImage !="string") {
           bannerImageUrl = await uploadFileToS3(bannerImage);
+        }else{
+          bannerImageUrl = bannerImage
         }
       
-        if (thumbnailImage) {
+        if (thumbnailImage && typeof thumbnailImage !="string") {
           thumbnailImageUrl = await uploadFileToS3(thumbnailImage);
+        }else{
+          thumbnailImageUrl = thumbnailImage
         }
       
         // Update values with image URLs
@@ -166,11 +170,19 @@ export default function AddOrEdit({editData = {}}:any) {
           bannerImage: bannerImageUrl,
           thumbnailImage: thumbnailImageUrl,
         };
-      
-        await addData("categories", updatedValues);
+        if(isEdit){
+          await update("categories", {...updatedValues , _id : editData["_id"] });
+        }else{
+          await addData("categories", updatedValues);await addData("categories", updatedValues);
+        }
         setToastMessage({message : `Submitted Successfully !`, type : "success"});
         setTimeout(() => {
-          router.push(window.location.href.replace("add", ""))
+          if(isEdit){
+            router.push(window.location.href.split('/edit')[0])
+          }else{
+            router.push(window.location.href.replace("add", ""))
+          }
+         
         }, 3000);
     }catch(err){
       setIsSubmitting("none");
