@@ -1,4 +1,4 @@
-import {nextui} from '@nextui-org/theme'
+import { nextui } from '@nextui-org/theme'
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -7,11 +7,36 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'
   ],
-  theme: {
-    extend: {},
-  },
-  darkMode: "class",
+  darkMode: "class", // Enable dark mode using a class
   plugins: [nextui({
+    themes: {
+      dark: {
+        colors: {
+          primary: {
+            DEFAULT: "#FF00FF",
+            foreground: "#000000",
+          },
+          focus: "#BEF264",
+          danger: {
+            DEFAULT: "#BEF264",
+            foreground: "#000000",
+          },
+        },
+      },
+      light: {
+        colors: {
+          primary: {
+            DEFAULT: "#BEF264",
+            foreground: "#000000",
+          },
+          focus: "#BEF264",
+          danger: {
+            DEFAULT: "#BEF264",
+            foreground: "#000000",
+          },
+        },
+      },
+    },
     layout: {
       disabledOpacity: "0.3", // opacity-[0.3]
       radius: {
